@@ -1,5 +1,11 @@
 [project]
 name = "wedding-invitation-generator"
 version = "1.0.0"
-description = "Generate personalized wedding invitation PDFs from a PDF template."
-requires-python = ">=3.10"
+description = "Mobile-friendly wedding invitation PDF generator"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "python-multipart",
+    "PyMuPDF",
+    "openpyxl",
+]

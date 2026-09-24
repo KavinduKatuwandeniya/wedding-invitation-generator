@@ -2,10 +2,11 @@ import io
 import os
 import re
 import zipfile
+from pathlib import Path
 
 import fitz
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import HTMLResponse, Response
 from openpyxl import load_workbook
 
 FONT_SIZE = 10
@@ -21,10 +22,20 @@ LINE_RIGHT_X = 299.0
 DOTTED_LEFT_X = 99.57
 DOTTED_RIGHT_X = 298.43
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ROCKWELL_FONT = os.path.join(BASE_DIR, "fonts", "ROCK.TTF")
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_FILE = BASE_DIR / "public" / "index.html"
+ROCKWELL_FONT = BASE_DIR / "fonts" / "ROCK.TTF"
 
-app = FastAPI()
+app = FastAPI(title="Wedding Invitation Generator")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    if not FRONTEND_FILE.exists():
+        raise HTTPException(status_code=500, detail="Frontend file is missing.")
+    return HTMLResponse(
+        content=FRONTEND_FILE.read_text(encoding="utf-8")
+    )
 
 
 def sanitize_filename(name: str) -> str:
@@ -48,12 +59,10 @@ def read_names_from_excel(excel_bytes: bytes) -> list[str]:
 
     for row in worksheet.iter_rows(min_row=2, min_col=1, max_col=1):
         value = row[0].value
-
         if value is None:
             continue
 
         name = normalize_name(value)
-
         if name:
             names.append(name)
 
@@ -67,13 +76,11 @@ def create_invitation(template_bytes: bytes, name: str) -> bytes:
 
     page.insert_font(
         fontname="RockwellExact",
-        fontfile=ROCKWELL_FONT,
+        fontfile=str(ROCKWELL_FONT),
     )
 
-    font = fitz.Font(fontfile=ROCKWELL_FONT)
+    font = fitz.Font(fontfile=str(ROCKWELL_FONT))
 
-    # Remove the original dotted-line area so the generated name
-    # and replacement dotted line can be positioned precisely.
     page.draw_rect(
         fitz.Rect(
             LINE_LEFT_X,
@@ -90,11 +97,9 @@ def create_invitation(template_bytes: bytes, name: str) -> bytes:
         name,
         fontsize=FONT_SIZE,
     )
-
     spacing_width = LETTER_SPACING * max(len(name) - 1, 0)
     total_text_width = normal_text_width + spacing_width
-
-    current_x = LINE_CENTER_X - (total_text_width / 2)
+    current_x = LINE_CENTER_X - total_text_width / 2
 
     for character in name:
         page.insert_text(
@@ -106,14 +111,11 @@ def create_invitation(template_bytes: bytes, name: str) -> bytes:
             overlay=True,
         )
 
-        character_width = font.text_length(
-            character,
-            fontsize=FONT_SIZE,
+        current_x += (
+            font.text_length(character, fontsize=FONT_SIZE)
+            + LETTER_SPACING
         )
 
-        current_x += character_width + LETTER_SPACING
-
-    # Draw the dotted line below the name.
     page.draw_line(
         p1=(DOTTED_LEFT_X, DOTTED_LINE_Y),
         p2=(DOTTED_RIGHT_X, DOTTED_LINE_Y),
@@ -124,46 +126,21 @@ def create_invitation(template_bytes: bytes, name: str) -> bytes:
     )
 
     output = io.BytesIO()
-
-    document.save(
-        output,
-        garbage=4,
-        deflate=True,
-    )
-
+    document.save(output, garbage=4, deflate=True)
     document.close()
-
     return output.getvalue()
-
-
-def validate_template(pdf_bytes: bytes):
-    try:
-        document = fitz.open(
-            stream=pdf_bytes,
-            filetype="pdf",
-        )
-
-        if document.page_count < 1:
-            raise ValueError("The PDF does not contain any pages.")
-
-        document.close()
-    except Exception as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid PDF template: {exc}",
-        )
 
 
 @app.post("/api/generate")
 async def generate_invitations(
     pdf: UploadFile = File(...),
-    name: str | None = Form(None),
-    excel: UploadFile | None = File(None),
+    name: str | None = Form(default=None),
+    excel: UploadFile | None = File(default=None),
 ):
-    if not os.path.exists(ROCKWELL_FONT):
+    if not ROCKWELL_FONT.exists():
         raise HTTPException(
             status_code=500,
-            detail="Rockwell font file is missing from the server.",
+            detail="Rockwell font file is missing. Expected fonts/ROCK.TTF.",
         )
 
     if not pdf.filename or not pdf.filename.lower().endswith(".pdf"):
@@ -173,35 +150,32 @@ async def generate_invitations(
         )
 
     has_name = bool(name and name.strip())
-    has_excel = excel is not None and bool(excel.filename)
+    has_excel = bool(excel and excel.filename)
 
-    if not has_name and not has_excel:
+    if has_name == has_excel:
         raise HTTPException(
             status_code=400,
-            detail="Enter a name or upload an Excel file.",
-        )
-
-    if has_name and has_excel:
-        raise HTTPException(
-            status_code=400,
-            detail="Use either a name or an Excel file, not both.",
+            detail="Enter a name OR upload an Excel file.",
         )
 
     pdf_bytes = await pdf.read()
-    validate_template(pdf_bytes)
 
-    # Single-name mode
+    try:
+        document = fitz.open(stream=pdf_bytes, filetype="pdf")
+        if document.page_count < 1:
+            raise ValueError("The PDF has no pages.")
+        document.close()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid PDF template: {exc}",
+        )
+
     if has_name:
         normalized_name = normalize_name(name)
 
-        if not normalized_name:
-            raise HTTPException(
-                status_code=400,
-                detail="Please enter a name.",
-            )
-
         try:
-            pdf_output = create_invitation(
+            result = create_invitation(
                 pdf_bytes,
                 normalized_name,
             )
@@ -216,16 +190,13 @@ async def generate_invitations(
         )
 
         return Response(
-            content=pdf_output,
+            content=result,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": (
-                    f'attachment; filename="{filename}"'
-                )
+                "Content-Disposition": f'attachment; filename="{filename}"'
             },
         )
 
-    # Excel bulk mode
     if not excel.filename.lower().endswith((".xlsx", ".xlsm")):
         raise HTTPException(
             status_code=400,
@@ -245,7 +216,7 @@ async def generate_invitations(
     if not names:
         raise HTTPException(
             status_code=400,
-            detail="No names were found. Names should start from cell A2.",
+            detail="No names were found. Put names in column A starting at A2.",
         )
 
     zip_buffer = io.BytesIO()
@@ -257,21 +228,17 @@ async def generate_invitations(
             compression=zipfile.ZIP_DEFLATED,
         ) as zip_file:
             for index, guest_name in enumerate(names, start=1):
-                pdf_output = create_invitation(
+                result = create_invitation(
                     pdf_bytes,
                     guest_name,
                 )
 
                 filename = (
-                    f"{index:03d}_"
-                    f"Invitation_"
+                    f"{index:03d}_Invitation_"
                     f"{sanitize_filename(guest_name)}.pdf"
                 )
 
-                zip_file.writestr(
-                    filename,
-                    pdf_output,
-                )
+                zip_file.writestr(filename, result)
 
     except Exception as exc:
         raise HTTPException(

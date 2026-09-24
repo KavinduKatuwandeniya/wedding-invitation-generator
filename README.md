@@ -1,37 +1,8 @@
-# Wedding Invitation Generator
+# Wedding Invitation Generator — Vercel
 
-A mobile-friendly Vercel web app for generating personalized wedding invitation PDFs.
+This version uses the current zero-configuration FastAPI deployment model.
 
-## Two input modes
-
-### Single Name
-
-Enter a guest name in the text box.
-
-Example:
-
-`Mr. Kulunu Weerasoory`
-
-The app generates one PDF immediately.
-
-### Excel List
-
-Upload an `.xlsx` or `.xlsm` file.
-
-Format:
-
-| A |
-|---|
-| Name |
-| Mr. Kulunu Weerasoory |
-| Mr. John Perera |
-| Ms. Jane Perera |
-
-Names are read from A2 downward and converted to ALL CAPS.
-
-The app generates one PDF for each name and returns a ZIP file.
-
-## Project structure
+## Structure
 
 ```text
 wedding-invitation-generator/
@@ -43,110 +14,74 @@ wedding-invitation-generator/
 │   └── ROCK.TTF
 ├── requirements.txt
 ├── pyproject.toml
-├── vercel.json
 ├── .gitignore
 └── README.md
 ```
 
-## Important: Rockwell font
+There is intentionally no `vercel.json`.
 
-Place the full Windows Rockwell font file here:
+## Important
+
+Copy your full Rockwell font to:
 
 ```text
 fonts/ROCK.TTF
 ```
 
-Do not use a subsetted Rockwell font extracted from the PDF.
-
-The generator uses:
-
-- Rockwell
-- 10 pt
-- `#765830`
-- 84/1000 em letter spacing
-- centered name
-- dotted line underneath the name
-
-## Local setup
-
-Create and activate a virtual environment:
+## Local test
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```powershell
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-Install Vercel CLI:
-
-```powershell
-npm install -g vercel
-```
-
-Run locally:
-
-```powershell
-vercel dev
+pip install "fastapi[standard]"
+fastapi dev api/index.py
 ```
 
 Open:
 
 ```text
-http://localhost:3000
+http://127.0.0.1:8000/
+```
+
+You can also use:
+
+```powershell
+vercel dev
 ```
 
 ## Deploy
 
-Login:
+From the project root:
 
 ```powershell
 vercel login
+vercel link
+vercel deploy --prod
 ```
 
-Deploy preview:
+Or connect the GitHub repository from the Vercel dashboard.
 
-```powershell
-vercel
-```
+## Input modes
 
-Deploy production:
+### Single Name
 
-```powershell
-vercel --prod
-```
+Enter a name and download one PDF.
 
-## Mobile support
+### Excel
 
-The frontend is responsive and designed for phones, tablets, and desktop browsers.
+Upload an `.xlsx` or `.xlsm` file with names in column A starting at A2. A ZIP containing one PDF per name is returned.
 
-It supports:
+## PDF formatting
 
-- iPhone Safari
-- Android Chrome
-- tablet browsers
-- desktop browsers
+- Rockwell
+- 10 pt
+- `#765830`
+- 84/1000 em letter spacing
+- centered at X 199.001
+- baseline Y 134.0
+- dotted line Y 138.5
 
-The file controls use the native mobile file picker, so users can select files from their phone.
+## Privacy
 
-## Files processed
-
-The invitation PDF template and Excel file are uploaded only for the generation request. The application does not intentionally store them in a database.
-
-## Important Vercel limitation
-
-For large guest lists or large PDFs, serverless request/response limits can become relevant. This design is intended for normal wedding invitation templates and reasonably sized guest lists.
-
-If the guest list becomes very large, the architecture should be changed to use object storage/background processing.
-
-## Private wedding use
-
-If the URL will be shared publicly, consider adding authentication before using it for real guest data.
-
-## License / assets
-
-Make sure you have appropriate rights to use the invitation artwork and Rockwell font in your deployment.
+Uploaded files are processed for the generation request and are not intentionally persisted by the application.
