@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+    <meta
+        name="description"
+        content="Generate personalized wedding invitation PDFs."
+    >
+    <title>Wedding Invitation Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: #f7f4ef;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+            background:
+                radial-gradient(
+                    circle at top,
+                    #fffdf9 0%,
+                    #f7f4ef 45%,
+                    #eee8de 100%
+                );
+            color: #3f352a;
+            padding:
+                max(20px, env(safe-area-inset-top))
+                max(16px, env(safe-area-inset-right))
+                max(20px, env(safe-area-inset-bottom))
+                max(16px, env(safe-area-inset-left));
+        }
+
+        .page {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin: 14px 0 22px;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: #765830;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            color: #4a3928;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(28px, 8vw, 42px);
+            line-height: 1.08;
+            font-weight: 500;
+        }
+
+        .subtitle {
+            max-width: 520px;
+            margin: 10px auto 0;
+            color: #766b60;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(118, 88, 48, 0.14);
+            border-radius: 22px;
+            box-shadow: 0 18px 50px rgba(71, 54, 38, 0.10);
+            padding: clamp(20px, 5vw, 34px);
+        }
+
+        .template-box {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            display: block;
+            margin-bottom: 9px;
+            color: #554332;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 13px;
+            border: 1px dashed #bba98f;
+            border-radius: 13px;
+            background: #fbf9f5;
+            color: #5e5348;
+            font-size: 14px;
+        }
+
+        .file-input::file-selector-button {
+            margin-right: 10px;
+            border: 0;
+            border-radius: 9px;
+            padding: 9px 12px;
+            background: #765830;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .mode-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 5px;
+            margin-bottom: 22px;
+            border-radius: 14px;
+            background: #f1ece4;
+        }
+
+        .mode-switch label {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .mode-switch input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .mode-option {
+            display: block;
+            width: 100%;
+            padding: 12px 8px;
+            border-radius: 10px;
+            text-align: center;
+            color: #75695d;
+            font-size: 14px;
+            font-weight: 700;
+            transition: 0.2s ease;
+        }
+
+        .mode-switch input:checked + .mode-option {
+            background: white;
+            color: #765830;
+            box-shadow: 0 3px 12px rgba(71, 54, 38, 0.10);
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .name-input {
+            width: 100%;
+            min-height: 52px;
+            padding: 13px 15px;
+            border: 1px solid #d4c8b8;
+            border-radius: 13px;
+            outline: none;
+            background: #fff;
+            color: #3f352a;
+            font-size: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .name-input:focus {
+            border-color: #765830;
+            box-shadow: 0 0 0 4px rgba(118, 88, 48, 0.10);
+        }
+
+        .hint {
+            margin: 8px 2px 0;
+            color: #8a7d70;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .excel-drop {
+            display: block;
+            padding: 18px;
+            border: 1px dashed #bba98f;
+            border-radius: 13px;
+            background: #fbf9f5;
+        }
+
+        .generate-button {
+            width: 100%;
+            min-height: 54px;
+            margin-top: 24px;
+            border: 0;
+            border-radius: 14px;
+            background: #765830;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(118, 88, 48, 0.22);
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .generate-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .generate-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .status {
+            display: none;
+            margin-top: 18px;
+            padding: 13px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.info {
+            background: #f2eee8;
+            color: #625548;
+        }
+
+        .status.success {
+            background: #edf5ed;
+            color: #3f6543;
+        }
+
+        .status.error {
+            background: #faeeee;
+            color: #8b4141;
+        }
+
+        .footer {
+            margin: 18px 0 4px;
+            text-align: center;
+            color: #95897c;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: max(14px, env(safe-area-inset-top));
+            }
+
+            .header {
+                margin-bottom: 18px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .card {
+                border-radius: 18px;
+                padding: 18px;
+            }
+
+            .mode-option {
+                font-size: 13px;
+            }
+
+            .file-input {
+                font-size: 13px;
+            }
+
+            .file-input::file-selector-button {
+                display: block;
+                margin: 0 0 8px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <p class="eyebrow">Wedding Stationery</p>
+            <h1>Invitation Generator</h1>
+            <p class="subtitle">
+                Create a personalized invitation from your PDF template,
+                either one name at a time or in bulk from Excel.
+            </p>
+        </header>
+
+        <section class="card">
+            <div class="template-box">
+                <label class="section-label" for="pdfFile">
+                    1. Invitation PDF Template
+                </label>
+
+                <input
+                    id="pdfFile"
+                    class="file-input"
+                    type="file"
+                    accept=".pdf,application/pdf"
+                >
+
+                <p class="hint">
+                    Upload the invitation PDF that already contains the
+                    design and dotted name line.
+                </p>
+            </div>
+
+            <div>
+                <span class="section-label">2. Choose Input Method</span>
+
+                <div class="mode-switch">
+                    <label>
+                        <input
+                            type="radio"
+                            name="mode"
+                            value="name"
+                            checked
+                        >
+                        <span class="mode-option">Single Name</span>
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="mode"
+                            value="excel"
+                        >
+                        <span class="mode-option">Excel List</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="namePanel" class="panel active">
+                <label class="section-label" for="nameInput">
+                    Guest Name
+                </label>
+
+                <input
+                    id="nameInput"
+                    class="name-input"
+                    type="text"
+                    autocomplete="off"
+                    autocapitalize="words"
+                    placeholder="e.g. Mr. Kulunu Weerasoory"
+                >
+
+                <p class="hint">
+                    The name will automatically be converted to ALL CAPS
+                    in the generated PDF.
+                </p>
+            </div>
+
+            <div id="excelPanel" class="panel">
+                <label class="section-label" for="excelFile">
+                    Excel Guest List
+                </label>
+
+                <div class="excel-drop">
+                    <input
+                        id="excelFile"
+                        class="file-input"
+                        type="file"
+                        accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12"
+                    >
+
+                    <p class="hint">
+                        Put the header in A1 and guest names in A2,
+                        A3, A4, and so on.
+                    </p>
+                </div>
+            </div>
+
+            <button
+                id="generateButton"
+                class="generate-button"
+                type="button"
+            >
+                Generate PDF
+            </button>
+
+            <div id="status" class="status"></div>
+        </section>
+
+        <p class="footer">
+            Your uploaded files are processed for the generation request.
+        </p>
+    </main>
+
+    <script>
+        const pdfFile = document.getElementById("pdfFile");
+        const nameInput = document.getElementById("nameInput");
+        const excelFile = document.getElementById("excelFile");
+        const namePanel = document.getElementById("namePanel");
+        const excelPanel = document.getElementById("excelPanel");
+        const generateButton = document.getElementById("generateButton");
+        const statusBox = document.getElementById("status");
+
+        const modeInputs = document.querySelectorAll(
+            'input[name="mode"]'
+        );
+
+        function getMode() {
+            return document.querySelector(
+                'input[name="mode"]:checked'
+            ).value;
+        }
+
+        function updateMode() {
+            const mode = getMode();
+
+            namePanel.classList.toggle(
+                "active",
+                mode === "name"
+            );
+
+            excelPanel.classList.toggle(
+                "active",
+                mode === "excel"
+            );
+
+            generateButton.textContent =
+                mode === "name"
+                    ? "Generate PDF"
+                    : "Generate Invitations";
+        }
+
+        function showStatus(message, type) {
+            statusBox.textContent = message;
+            statusBox.className = `status show ${type}`;
+        }
+
+        modeInputs.forEach((input) => {
+            input.addEventListener("change", updateMode);
+        });
+
+        generateButton.addEventListener("click", async () => {
+            const mode = getMode();
+
+            if (!pdfFile.files.length) {
+                showStatus(
+                    "Please select the invitation PDF template first.",
+                    "error"
+                );
+                return;
+            }
+
+            if (mode === "name" && !nameInput.value.trim()) {
+                showStatus(
+                    "Please enter a guest name.",
+                    "error"
+                );
+                nameInput.focus();
+                return;
+            }
+
+            if (mode === "excel" && !excelFile.files.length) {
+                showStatus(
+                    "Please select an Excel guest list.",
+                    "error"
+                );
+                return;
+            }
+
+            const formData = new FormData();
+
+            formData.append(
+                "pdf",
+                pdfFile.files[0]
+            );
+
+            if (mode === "name") {
+                formData.append(
+                    "name",
+                    nameInput.value.trim()
+                );
+            } else {
+                formData.append(
+                    "excel",
+                    excelFile.files[0]
+                );
+            }
+
+            generateButton.disabled = true;
+            showStatus(
+                mode === "name"
+                    ? "Generating your invitation..."
+                    : "Generating all invitations...",
+                "info"
+            );
+
+            try {
+                const response = await fetch(
+                    "/api/generate",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                if (!response.ok) {
+                    let message = "Generation failed.";
+
+                    try {
+                        const error = await response.json();
+                        if (error.detail) {
+                            message = error.detail;
+                        }
+                    } catch (_) {
+                        // Keep the generic error.
+                    }
+
+                    throw new Error(message);
+                }
+
+                const blob = await response.blob();
+
+                const contentDisposition =
+                    response.headers.get(
+                        "Content-Disposition"
+                    ) || "";
+
+                const match = contentDisposition.match(
+                    /filename="?([^"]+)"?/i
+                );
+
+                const filename =
+                    match && match[1]
+                        ? match[1]
+                        : mode === "name"
+                            ? "Invitation.pdf"
+                            : "Wedding_Invitations.zip";
+
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                URL.revokeObjectURL(url);
+
+                showStatus(
+                    mode === "name"
+                        ? "Invitation PDF generated and downloaded."
+                        : "All invitation PDFs were generated and downloaded as a ZIP.",
+                    "success"
+                );
+            } catch (error) {
+                showStatus(
+                    error.message || "Something went wrong.",
+                    "error"
+                );
+            } finally {
+                generateButton.disabled = false;
+            }
+        });
+
+        updateMode();
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+[project]
+name = "wedding-invitation-generator"
+version = "1.0.0"
+description = "Generate personalized wedding invitation PDFs from a PDF template."
+requires-python = ">=3.10"
