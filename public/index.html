@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-    <meta
-        name="description"
-        content="Generate personalized wedding invitation PDFs."
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Generate personalized wedding invitation PDFs.">
     <title>Wedding Invitation Generator</title>
 
     <style>
@@ -34,18 +29,13 @@
                 Arial,
                 sans-serif;
             background:
-                radial-gradient(
-                    circle at top,
+                radial-gradient(circle at top,
                     #fffdf9 0%,
                     #f7f4ef 45%,
-                    #eee8de 100%
-                );
+                    #eee8de 100%);
             color: #3f352a;
             padding:
-                max(20px, env(safe-area-inset-top))
-                max(16px, env(safe-area-inset-right))
-                max(20px, env(safe-area-inset-bottom))
-                max(16px, env(safe-area-inset-left));
+                max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
         }
 
         .page {
@@ -93,8 +83,46 @@
             padding: clamp(20px, 5vw, 34px);
         }
 
-        .template-box {
+        .template-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 24px;
+            padding: 14px 16px;
+            border-radius: 13px;
+            background: #f7f3ec;
+            border: 1px solid rgba(118, 88, 48, 0.10);
+        }
+
+        .template-icon {
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #765830;
+            color: white;
+            font-size: 18px;
+        }
+
+        .template-info-content {
+            min-width: 0;
+        }
+
+        .template-info-title {
+            margin: 0 0 3px;
+            color: #554332;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .template-info-text {
+            margin: 0;
+            color: #8a7d70;
+            font-size: 12px;
+            line-height: 1.4;
         }
 
         .section-label {
@@ -103,27 +131,6 @@
             color: #554332;
             font-size: 14px;
             font-weight: 700;
-        }
-
-        .file-input {
-            width: 100%;
-            padding: 13px;
-            border: 1px dashed #bba98f;
-            border-radius: 13px;
-            background: #fbf9f5;
-            color: #5e5348;
-            font-size: 14px;
-        }
-
-        .file-input::file-selector-button {
-            margin-right: 10px;
-            border: 0;
-            border-radius: 9px;
-            padding: 9px 12px;
-            background: #765830;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
         }
 
         .mode-switch {
@@ -159,7 +166,7 @@
             transition: 0.2s ease;
         }
 
-        .mode-switch input:checked + .mode-option {
+        .mode-switch input:checked+.mode-option {
             background: white;
             color: #765830;
             box-shadow: 0 3px 12px rgba(71, 54, 38, 0.10);
@@ -204,6 +211,27 @@
             border: 1px dashed #bba98f;
             border-radius: 13px;
             background: #fbf9f5;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 13px;
+            border: 1px dashed #bba98f;
+            border-radius: 13px;
+            background: #fbf9f5;
+            color: #5e5348;
+            font-size: 14px;
+        }
+
+        .file-input::file-selector-button {
+            margin-right: 10px;
+            border: 0;
+            border-radius: 9px;
+            padding: 9px 12px;
+            background: #765830;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         .generate-button {
@@ -308,51 +336,45 @@
             <p class="eyebrow">Wedding Stationery</p>
             <h1>Invitation Generator</h1>
             <p class="subtitle">
-                Create a personalized invitation from your PDF template,
-                either one name at a time or in bulk from Excel.
+                Create personalized wedding invitations
+                using the configured invitation template.
             </p>
         </header>
 
         <section class="card">
-            <div class="template-box">
-                <label class="section-label" for="pdfFile">
-                    1. Invitation PDF Template
-                </label>
+            <div class="template-info">
+                <div class="template-icon">✓</div>
 
-                <input
-                    id="pdfFile"
-                    class="file-input"
-                    type="file"
-                    accept=".pdf,application/pdf"
-                >
+                <div class="template-info-content">
+                    <p class="template-info-title">
+                        Invitation Template Ready
+                    </p>
 
-                <p class="hint">
-                    Upload the invitation PDF that already contains the
-                    design and dotted name line.
-                </p>
+                    <p class="template-info-text">
+                        The wedding invitation template is already
+                        configured and ready to use.
+                    </p>
+                </div>
             </div>
 
             <div>
-                <span class="section-label">2. Choose Input Method</span>
+                <span class="section-label">
+                    1. Choose Input Method
+                </span>
 
                 <div class="mode-switch">
                     <label>
-                        <input
-                            type="radio"
-                            name="mode"
-                            value="name"
-                            checked
-                        >
-                        <span class="mode-option">Single Name</span>
+                        <input type="radio" name="mode" value="name" checked>
+                        <span class="mode-option">
+                            Single Name
+                        </span>
                     </label>
 
                     <label>
-                        <input
-                            type="radio"
-                            name="mode"
-                            value="excel"
-                        >
-                        <span class="mode-option">Excel List</span>
+                        <input type="radio" name="mode" value="excel">
+                        <span class="mode-option">
+                            Excel List
+                        </span>
                     </label>
                 </div>
             </div>
@@ -362,18 +384,12 @@
                     Guest Name
                 </label>
 
-                <input
-                    id="nameInput"
-                    class="name-input"
-                    type="text"
-                    autocomplete="off"
-                    autocapitalize="words"
-                    placeholder="e.g. Mr. Kulunu Weerasoory"
-                >
+                <input id="nameInput" class="name-input" type="text" autocomplete="off" autocapitalize="words"
+                    placeholder="e.g. Mr. Kulunu Weerasoory">
 
                 <p class="hint">
-                    The name will automatically be converted to ALL CAPS
-                    in the generated PDF.
+                    The name will automatically be converted
+                    to ALL CAPS in the generated PDF.
                 </p>
             </div>
 
@@ -383,12 +399,8 @@
                 </label>
 
                 <div class="excel-drop">
-                    <input
-                        id="excelFile"
-                        class="file-input"
-                        type="file"
-                        accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12"
-                    >
+                    <input id="excelFile" class="file-input" type="file"
+                        accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12">
 
                     <p class="hint">
                         Put the header in A1 and guest names in A2,
@@ -397,11 +409,7 @@
                 </div>
             </div>
 
-            <button
-                id="generateButton"
-                class="generate-button"
-                type="button"
-            >
+            <button id="generateButton" class="generate-button" type="button">
                 Generate PDF
             </button>
 
@@ -409,22 +417,33 @@
         </section>
 
         <p class="footer">
-            Your uploaded files are processed for the generation request.
+            The invitation template is securely stored on the server.
         </p>
     </main>
 
     <script>
-        const pdfFile = document.getElementById("pdfFile");
-        const nameInput = document.getElementById("nameInput");
-        const excelFile = document.getElementById("excelFile");
-        const namePanel = document.getElementById("namePanel");
-        const excelPanel = document.getElementById("excelPanel");
-        const generateButton = document.getElementById("generateButton");
-        const statusBox = document.getElementById("status");
+        const nameInput =
+            document.getElementById("nameInput");
 
-        const modeInputs = document.querySelectorAll(
-            'input[name="mode"]'
-        );
+        const excelFile =
+            document.getElementById("excelFile");
+
+        const namePanel =
+            document.getElementById("namePanel");
+
+        const excelPanel =
+            document.getElementById("excelPanel");
+
+        const generateButton =
+            document.getElementById("generateButton");
+
+        const statusBox =
+            document.getElementById("status");
+
+        const modeInputs =
+            document.querySelectorAll(
+                'input[name="mode"]'
+            );
 
         function getMode() {
             return document.querySelector(
@@ -453,138 +472,156 @@
 
         function showStatus(message, type) {
             statusBox.textContent = message;
-            statusBox.className = `status show ${type}`;
+            statusBox.className =
+                `status show ${type}`;
         }
 
         modeInputs.forEach((input) => {
-            input.addEventListener("change", updateMode);
+            input.addEventListener(
+                "change",
+                updateMode
+            );
         });
 
-        generateButton.addEventListener("click", async () => {
-            const mode = getMode();
+        generateButton.addEventListener(
+            "click",
+            async () => {
+                const mode = getMode();
 
-            if (!pdfFile.files.length) {
-                showStatus(
-                    "Please select the invitation PDF template first.",
-                    "error"
-                );
-                return;
-            }
+                if (
+                    mode === "name" &&
+                    !nameInput.value.trim()
+                ) {
+                    showStatus(
+                        "Please enter a guest name.",
+                        "error"
+                    );
 
-            if (mode === "name" && !nameInput.value.trim()) {
-                showStatus(
-                    "Please enter a guest name.",
-                    "error"
-                );
-                nameInput.focus();
-                return;
-            }
-
-            if (mode === "excel" && !excelFile.files.length) {
-                showStatus(
-                    "Please select an Excel guest list.",
-                    "error"
-                );
-                return;
-            }
-
-            const formData = new FormData();
-
-            formData.append(
-                "pdf",
-                pdfFile.files[0]
-            );
-
-            if (mode === "name") {
-                formData.append(
-                    "name",
-                    nameInput.value.trim()
-                );
-            } else {
-                formData.append(
-                    "excel",
-                    excelFile.files[0]
-                );
-            }
-
-            generateButton.disabled = true;
-            showStatus(
-                mode === "name"
-                    ? "Generating your invitation..."
-                    : "Generating all invitations...",
-                "info"
-            );
-
-            try {
-                const response = await fetch(
-                    "/api/generate",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-                if (!response.ok) {
-                    let message = "Generation failed.";
-
-                    try {
-                        const error = await response.json();
-                        if (error.detail) {
-                            message = error.detail;
-                        }
-                    } catch (_) {
-                        // Keep the generic error.
-                    }
-
-                    throw new Error(message);
+                    nameInput.focus();
+                    return;
                 }
 
-                const blob = await response.blob();
+                if (
+                    mode === "excel" &&
+                    !excelFile.files.length
+                ) {
+                    showStatus(
+                        "Please select an Excel guest list.",
+                        "error"
+                    );
 
-                const contentDisposition =
-                    response.headers.get(
-                        "Content-Disposition"
-                    ) || "";
+                    return;
+                }
 
-                const match = contentDisposition.match(
-                    /filename="?([^"]+)"?/i
-                );
+                const formData = new FormData();
 
-                const filename =
-                    match && match[1]
-                        ? match[1]
-                        : mode === "name"
-                            ? "Invitation.pdf"
-                            : "Wedding_Invitations.zip";
+                if (mode === "name") {
+                    formData.append(
+                        "name",
+                        nameInput.value.trim()
+                    );
+                } else {
+                    formData.append(
+                        "excel",
+                        excelFile.files[0]
+                    );
+                }
 
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-
-                URL.revokeObjectURL(url);
+                generateButton.disabled = true;
 
                 showStatus(
                     mode === "name"
-                        ? "Invitation PDF generated and downloaded."
-                        : "All invitation PDFs were generated and downloaded as a ZIP.",
-                    "success"
+                        ? "Generating your invitation..."
+                        : "Generating all invitations...",
+                    "info"
                 );
-            } catch (error) {
-                showStatus(
-                    error.message || "Something went wrong.",
-                    "error"
-                );
-            } finally {
-                generateButton.disabled = false;
+
+                try {
+                    const response = await fetch(
+                        "/api/generate",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+                    if (!response.ok) {
+                        let message =
+                            "Generation failed.";
+
+                        try {
+                            const error =
+                                await response.json();
+
+                            if (error.detail) {
+                                message =
+                                    error.detail;
+                            }
+                        } catch (_) {
+                            // Keep the generic error.
+                        }
+
+                        throw new Error(message);
+                    }
+
+                    const blob =
+                        await response.blob();
+
+                    const contentDisposition =
+                        response.headers.get(
+                            "Content-Disposition"
+                        ) || "";
+
+                    const match =
+                        contentDisposition.match(
+                            /filename="?([^"]+)"?/i
+                        );
+
+                    const filename =
+                        match && match[1]
+                            ? match[1]
+                            : mode === "name"
+                                ? "Invitation.pdf"
+                                : "Wedding_Invitations.zip";
+
+                    const url =
+                        URL.createObjectURL(blob);
+
+                    const link =
+                        document.createElement("a");
+
+                    link.href = url;
+                    link.download = filename;
+
+                    document.body.appendChild(link);
+
+                    link.click();
+
+                    link.remove();
+
+                    URL.revokeObjectURL(url);
+
+                    showStatus(
+                        mode === "name"
+                            ? "Invitation PDF generated and downloaded."
+                            : "All invitation PDFs were generated and downloaded as a ZIP.",
+                        "success"
+                    );
+
+                } catch (error) {
+                    showStatus(
+                        error.message ||
+                        "Something went wrong.",
+                        "error"
+                    );
+                } finally {
+                    generateButton.disabled = false;
+                }
             }
-        });
+        );
 
         updateMode();
     </script>
 </body>
+
 </html>
